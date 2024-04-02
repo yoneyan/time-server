@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Timer APP</title>
+</head>
+
+<body>
+<b>Timer</b>
+<h2 id="output"></h2>
+<input type="text" id="input"></p>
+<p><input type="submit" class="btn" value="送信"></p>
+<button class="btn" onclick="command('pause')">一時停止</button>
+<button class="btn" onclick="command('resume')">再開</button>
+<button class="btn" onclick="command('stop')">ストップ</button>
+</body>
+
+</html>
+
+<script>
+  let loc = window.location;
+  let uri = 'ws:';
+  if (loc.protocol === 'https:') {
+    uri = 'wss:';
+  }
+  uri += '//' + loc.host;
+  uri += loc.pathname + 'ws';
+  const ws = new WebSocket(uri)
+
+  ws.onopen = function () {
+    console.log('Connected')
+  }
+
+  ws.onmessage = function (evt) {
+    let out = document.getElementById('output');
+    let value = Number(evt.data)
+    if (evt.data.includes("-")) {
+      value = -(value)
+    }
+    const hour = ('00' + Math.floor(value % 86400 / 3600)).slice(-2);
+    const min = ('00' + Math.floor(value % 3600 / 60)).slice(-2);
+    const sec = ('00' + value % 60).slice(-2);
+    out.innerHTML = `${hour}:${min}:${sec}`;
+  }
+
+  const btn = document.querySelector('.btn')
+  btn.addEventListener('click', () => {
+    ws.send(document.getElementById('input').value)
+  })
+
+
+  function command(cmd) {
+    ws.send(cmd)
+  }
+</script>
