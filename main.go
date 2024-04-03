@@ -9,9 +9,12 @@ import (
 	"time"
 )
 
+var patlites_from_socket = []string{
+	"192.168.10.1",
+}
+
 var patlites = []string{
-	"192.168.1.110",
-	"192.168.1.111",
+	"192.168.10.2",
 }
 
 func handleWebSocket(c echo.Context) error {
@@ -69,7 +72,7 @@ func main() {
 		for {
 			time.Sleep(1 * time.Second)
 			if !globalStatus.IsStart {
-				send_patlites("000000")
+				send_patlites("000000", 0x00)
 				continue
 			}
 			if globalStatus.IsPause {
@@ -84,16 +87,16 @@ func main() {
 				continue
 			}
 
-			if 0 < globalStatus.Second && globalStatus.Second < 10 {
-				send_patlites("020000")
+			if 0 < globalStatus.Second && globalStatus.Second <= 10 {
+				send_patlites("020000", 0x40)
 			} else if 10 < globalStatus.Second && globalStatus.Second < (globalStatus.InputSecond/2) {
-				send_patlites("010000")
+				send_patlites("010000", 0x02)
 			} else if -5 < globalStatus.Second && globalStatus.Second <= 0 {
-				send_patlites("100001")
-			} else if globalStatus.Second < -5 {
-				send_patlites("200000")
+				send_patlites("100001", 0x09)
+			} else if globalStatus.Second <= -5 {
+				send_patlites("200000", 0x20)
 			} else {
-				send_patlites("001000")
+				send_patlites("001000", 0x04)
 			}
 		}
 	}()
