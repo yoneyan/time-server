@@ -89,7 +89,7 @@ func main() {
 
 			if 0 < globalStatus.Second && globalStatus.Second <= 10 {
 				send_patlites("020000", 0x40)
-			} else if 10 < globalStatus.Second && globalStatus.Second < (globalStatus.InputSecond/2) {
+			} else if 10 < globalStatus.Second && globalStatus.Second <= 30 {
 				send_patlites("010000", 0x02)
 			} else if -5 < globalStatus.Second && globalStatus.Second <= 0 {
 				send_patlites("100001", 0x09)
