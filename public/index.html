@@ -4,65 +4,76 @@
 <head>
     <meta charset="utf-8">
     <title>Timer APP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
 </head>
 
 <body>
-<b>Timer</b>
-<h2 id="output"></h2>
-<input type="text" id="input"></p>
-<p><input type="submit" class="btn" value="送信"></p>
-<button class="btn" onclick="command('pause')">一時停止</button>
-<button class="btn" onclick="command('resume')">再開</button>
-<button class="btn" onclick="command('stop')">ストップ</button>
-<button class="btn" onclick="command('0')">ストップウォッチ</button>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+<h1>PatTimer</h1>
+<div id="status"></div>
+
+<p class="h1" style="font-size: 10px" id="output"></p>
+<div>
+    <input class="form-control" type="text" id="input" onchange="send()"/>
+</div>
+<br/>
+<button class="btn btn-primary" onclick="command('pause')">一時停止</button>
+<button class="btn btn-primary" onclick="command('resume')">再開</button>
+<button class="btn btn-primary" onclick="command('stop')">ストップ</button>
+<button class="btn btn-primary" onclick="command('0')">ストップウォッチ</button>
 </body>
 
 </html>
 
 <script>
-    let loc = window.location;
-    let uri = 'ws:';
-    if (loc.protocol === 'https:') {
-        uri = 'wss:';
-    }
-    uri += '//' + loc.host;
-    uri += loc.pathname + 'ws';
-    let ws = new WebSocket(uri)
+  let loc = window.location;
+  let uri = 'ws:';
+  if (loc.protocol === 'https:') {
+    uri = 'wss:';
+  }
+  uri += '//' + loc.host;
+  uri += loc.pathname + 'ws';
+  let ws = new WebSocket(uri)
 
-    function connect() {
-        ws = new WebSocket(uri)
-        ws.onopen = function () {
-            console.log('Connected')
-        }
-
-        ws.onmessage = function (evt) {
-            let out = document.getElementById('output');
-            let value = Number(evt.data)
-            if (evt.data.includes("-")) {
-                value = -(value)
-            }
-            const hour = ('00' + Math.floor(value % 86400 / 3600)).slice(-2);
-            const min = ('00' + Math.floor(value % 3600 / 60)).slice(-2);
-            const sec = ('00' + value % 60).slice(-2);
-            out.innerHTML = `${hour}:${min}:${sec}`;
-        }
-
-        ws.onclose = function (evt) {
-            setTimeout(() => {
-                connect()
-            }, 3000)
-        }
+  function connect() {
+    ws = new WebSocket(uri)
+    ws.onopen = function () {
+      console.log('Connected')
+      document.getElementById('status').innerHTML = '<span class="badge bg-success">WebSocket接続中</span>'
     }
 
-    const btn = document.querySelector('.btn')
-    btn.addEventListener('click', () => {
-        ws.send(document.getElementById('input').value)
-    })
-
-
-    function command(cmd) {
-        ws.send(cmd)
+    ws.onmessage = function (evt) {
+      let out = document.getElementById('output');
+      let value = Number(evt.data)
+      if (evt.data.includes("-")) {
+        value = -(value)
+      }
+      const hour = ('00' + Math.floor(value % 86400 / 3600)).slice(-2);
+      const min = ('00' + Math.floor(value % 3600 / 60)).slice(-2);
+      const sec = ('00' + value % 60).slice(-2);
+      out.innerHTML = `${hour}:${min}:${sec}`;
     }
 
-    connect()
+    ws.onclose = function (evt) {
+      document.getElementById('status').innerHTML = '<span class="badge bg-danger">WebSocket切断済み</span>'
+      setTimeout(() => {
+        connect()
+      }, 3000)
+    }
+  }
+
+  function send() {
+    const cmd = document.getElementById('input').value
+    ws.send(cmd)
+    document.getElementById('input').value = ""
+  }
+
+  function command(cmd) {
+    ws.send(cmd)
+  }
+
+  connect()
 </script>
